@@ -3,41 +3,36 @@
 ## Usage
 
 1. clone the git repo:
-
-```
-$ git clone git@github.com:0xdkay/kaist-thesis-template.git
-```
+  ```
+  $ git clone git@github.com:0xdkay/kaist-thesis-template.git
+  ```
 
 2. build it:
+  ``` sh
+  $ make
 
-``` sh
-$ make
-```
-
-(check p.pdf)
+  (check p.pdf)
+  ```
 
 3. starting point, p.tex:
+  ```
+  $ grep -oP 'input{\K\w+' p.tex
+  macro
+  abstract
+  intro
+  back
+  anal
+  accounting
+  attack
+  cm
+  related
+  concl
+  summary
+  ack
+  cv
+  ```
 
-```
-$ grep -oP 'input{\K\w+' p.tex
-macro
-abstract
-intro
-back
-anal
-accounting
-attack
-cm
-related
-concl
-summary
-ack
-cv
-```
-
-## Special Thanks
-Original format:
-
-```
-https://github.com/tsgates/die
-```
+### Original Format
+  ```
+  https://github.com/tsgates/die
+  ```
