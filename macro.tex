@@ -1,0 +1,39 @@
+\newcommand{\DK}[1]{\textcolor{cyan}{DK: #1}}
+\newcommand{\PP}[1]{
+\noindent{\bf #1}
+}
+
+\newcommand{\vt}{VoLTE\xspace}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+\newcommand{\cc}[0]{\ding{51}}
+\newcommand{\xx}[0]{\ding{56}}
+
+\def\Snospace~{\S{}}
+\renewcommand*\sectionautorefname{\Snospace}
+\def\sectionautorefname{\Snospace}
+\def\subsectionautorefname{\Snospace}
+\def\subsubsectionautorefname{\Snospace}
+\newcommand{\subfigureautorefname}{\figureautorefname}
+
+\newcommand{\chapmark}[1]{
+  Chapter #1
+}
+\def\Cnospace~{\chapmark{}}
+\renewcommand*\chapterautorefname{\Cnospace}
+\def\chapterautorefname{\Cnospace}
+
+
+\newcommand*\CC[1]{%
+\begin{tikzpicture}[baseline=(C.base)]
+\node[draw,circle,inner sep=0.2pt](C) {#1};
+\end{tikzpicture}}
+
+\newcommand*\CB[1]{%
+\begin{tikzpicture}[baseline=(C.base)]
+\node[draw,circle,inner sep=0.2pt, fill=black, text=white](C) {#1};
+\end{tikzpicture}}
+
+\providecommand{\keywords}[1]{\textbf{\textit{Keywords ---}} #1}
+

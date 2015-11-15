@@ -1,0 +1,152 @@
+%\documentclass[letterpaper]{acm_proc_article-sp}
+%\documentclass[letterpapar]{sig-alternate-2013}
+\documentclass[master,english,final,pdfdoc]{kaist-ucs}
+\usepackage{epsfig,endnotes}
+\usepackage{color}
+\usepackage{verbatim}
+\usepackage{xspace}
+\usepackage{mdframed}
+\usepackage{float}
+\usepackage{makecell}
+\usepackage{fancybox}
+
+\usepackage{times}
+\usepackage{flushend}
+\usepackage{datetime}
+\hypersetup{
+  colorlinks,
+  linkcolor={red!50!black},
+  citecolor={blue!50!black},
+  urlcolor={blue!50!black}
+}
+\hypersetup{citecolor=blue,linkcolor=blue}
+\usepackage{fancyhdr,lastpage}
+\usepackage{enumitem}
+\usepackage[labelfont=bf]{caption}
+\usepackage{amsmath,amsfonts}
+
+
+\usepackage{subfigure}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{arydshln}
+\usepackage{tabu}
+
+\newcommand{\dashrule}[1][black]{%
+  \color{#1}\rule[\dimexpr.5ex-.2pt]{4pt}{.4pt}\xleaders\hbox{\rule{4pt}{0pt}\rule[\dimexpr.5ex-.2pt]{4pt}{.4pt}}\hfill\kern0pt%
+  }
+\usepackage[htt]{hyphenat}
+\usepackage{tikz}
+\usepackage{microtype}
+\usepackage[sort,space]{cite}
+
+\usepackage{ifthen}
+
+\newcommand{\showComments}{yes}
+\newcommand{\note}[2]{%
+    \ifthenelse{\equal{\showComments}{yes}}{\textcolor{#1}{#2}}{}%
+}
+
+
+
+\usepackage[compact]{titlesec}
+\usepackage{listings}
+\usepackage{kotex}
+\makeatletter
+\newenvironment{btHighlight}[1][]
+{\begingroup\tikzset{bt@Highlight@par/.style={#1}}\begin{lrbox}{\@tempboxa}}
+{\end{lrbox}\bt@HL@box[bt@Highlight@par]{\@tempboxa}\endgroup}
+\newcommand\btHL[1][]{%
+  \begin{btHighlight}[#1]\bgroup\aftergroup\bt@HL@endenv%
+}
+\def\bt@HL@endenv{%
+  \end{btHighlight}%
+  \egroup
+}
+\newcommand{\bt@HL@box}[2][]{%
+  \tikz[#1]{%
+    \pgfpathrectangle{\pgfpoint{1pt}{0pt}}{\pgfpoint{\wd #2}{\ht #2}}%
+    \pgfusepath{use as bounding box}%
+    \node[anchor=base west, fill=orange!30,
+          outer sep=0pt, inner xsep=1pt, inner ysep=0pt,
+          rounded corners=3pt, minimum height=\ht\strutbox+1pt,#1]{%
+            \raisebox{1pt}{\strut}\strut\usebox{#2}};
+  }%
+}
+\makeatother
+
+\usepackage{amssymb}% http://ctan.org/pkg/amssymb
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+
+
+\lstset{basicstyle=\ttfamily,commentstyle=\itshape,language=Java}
+\lstdefinestyle{Java}{
+    language={Java},basicstyle=\ttfamily,
+    %% moredelim=**[is][\btHL]{`}{`},
+    moredelim=**[is][{\btHL[fill=gray!30]$\rightarrow$}]{@}{@},
+    moredelim=**[is][{\btHL[fill=blue!30]$\bigtriangleup$}]{^}{^}, moredelim=**[is][{\btHL[fill=red!30]$\bigtriangledown$}]{*}{*},
+    moredelim=**[is][{\btHL[fill=orange!30]\hspace{-1em}\textbf{${}^U$}}]{`}{`},
+    moredelim=**[is][{\btHL[fill=cyan!30]\hspace{-1em}\textbf{${}^B$}}]{\\}{\\},
+}
+
+\input{macro}
+
+
+\title[korean] {VoLTE 보안 취약점에 관한 연구}
+\title[english]{Dissecting VoLTE: Exploiting Free Data Channels and Security Problems}
+
+\author[korean] {김}{동관}
+\author[chinese]{金}{東 寬}
+\author[english]{Kim}{Dongkwan}
+
+\advisor[major]{김 용 대}{Kim, Yongdae}{signed}
+\department{EE}{engineering}
+\studentid{20143084}
+
+
+\referee[1]{김 용 대}
+\referee[2]{박 경 수}
+\referee[3]{한 동 수}
+\referee[4]{신 승 원}
+
+% @command approvaldate 지도교수논문승인일
+% @param   year,month,day 연,월,일 순으로 입력
+\approvaldate{2015}{12}{15}
+
+% @command refereedate 심사위원논문심사일
+% @param   year,month,day 연,월,일 순으로 입력
+\refereedate{2015}{12}{15}
+
+% @command gradyear 졸업년도
+\gradyear{2015}
+
+\begin{document}
+
+\input{abstract}
+
+% 목차 (Table of Contents) 생성
+\tableofcontents
+% 표목차 (List of Tables) 생성
+\listoftables
+% 그림목차 (List of Figures) 생성
+\listoffigures
+
+\input{intro}
+\input{back}
+\input{anal}
+\input{accounting}
+\input{attack}
+\input{cm}
+\input{related}
+\input{concl}
+
+
+\bibliographystyle{abbrv}
+\bibliography{references}
+
+\input{summary}
+\input{ack}
+\input{cv}
+
+\end{document}

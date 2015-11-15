@@ -1,0 +1,46 @@
+% 2 Background
+\chapter{VoLTE Overview}
+\label{sec:back}
+
+\section{LTE Network Infrastructure}
+\label{sec:cellular}
+
+A cellular network comprises two architectural components: an access
+network that the UE connects to, and a core network that supports its
+cellular infrastructure.
+ 
+
+\section{VoLTE Service}
+\label{sec:volte_network}
+
+\vt service is introduced to deliver voice calls
+over the packet-switching based LTE network.
+The service utilizes an IMS network based on SIP,
+similar to VoIP service over the LTE network.
+To establish a voice call, a UE
+follows standard procedures as depicted in~\autoref{fig:volte_procedure}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=130mm]{images/volte_procedure4}
+  \caption{Overview of packet-switching and IMS protocols in \vt; registration and call setup
+    between a UE and a LTE network.}
+  \label{fig:volte_procedure}
+\end{figure}
+
+
+\section{VoLTE Signaling Protocol}
+\label{sec:signal_protocol}
+
+
+\PP{Call Signaling.}
+If the user accepts the call at UE-B, it sends an {\tt OK (200)}
+
+
+\PP{Call Management in the UE.}
+speaker and a microphone. Upon receiving voice traffic from a radio
+channel, the CP processes the voice packets and forwards only audio data to
+the AP, which lessens the computational burden of the AP. 
+
+
+
