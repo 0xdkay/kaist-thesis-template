@@ -352,13 +352,13 @@
          \renewcommand{\@degreeField}{#2}} {}
     \ifthenelse{\equal{#1}{EE}}
         {\renewcommand{\@degreeCode}{\@degreePrefix #1}
-         \renewcommand{\@childDeptNameKor}{전기 및 전자공학과}
-         \renewcommand{\@childDeptNameEng}{Department of Electrical Engineering}
+         \renewcommand{\@childDeptNameKor}{전기 및 전자공학부}
+         \renewcommand{\@childDeptNameEng}{School of Electrical Engineering}
          \renewcommand{\@degreeField}{#2}} {}
     \ifthenelse{\equal{#1}{STE}}
         {\renewcommand{\@degreeCode}{\@degreePrefix #1}
-         \renewcommand{\@parentDeptNameKor}{전기 및 전자공학과}
-         \renewcommand{\@parentDeptNameEng}{Department of Electrical Engineering}
+         \renewcommand{\@parentDeptNameKor}{전기 및 전자공학부}
+         \renewcommand{\@parentDeptNameEng}{School of Electrical Engineering}
          \renewcommand{\@childDeptNameKor}{반도체공학프로그램}
          \renewcommand{\@childDeptNameEng}{KAIST Education Program for Semiconductor Industry}
          \renewcommand{\@degreeField}{#2}} {}                                                         
