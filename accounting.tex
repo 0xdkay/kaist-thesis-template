@@ -1,5 +1,341 @@
-
 \chapter{Exploiting Hidden Data Channels}
 \label{sec:accounting}
 
 From the analysis of the accounting policy and VoLTE call flow in
+\autoref{sec:anal_data}, we showed the possibility of hidden channels
+that an adversary can utilize to bypass accounting. These channels are classified
+into channels that reside in the VoLTE call flow (i.e. SIP and RTP tunneling) and a
+direct communication channel utilizing a VoLTE default bearer.
+
+\begin{figure}[b!]
+  \centering
+  \includegraphics[width=100mm]{images/SIP_media_tunneling4}
+  \caption{Flow of (1) SIP tunneling and (2) RTP tunneling}
+  \label{fig:sip_media_tunnel}
+  \includegraphics[width=100mm]{images/direct_tunneling4}
+  \caption{Flow of direct communication channel}
+  \label{fig:direct}
+\end{figure}
+
+
+
+\PP{SIP/RTP tunneling} are potentially free
+channels in \vt call service, as in~\autoref{fig:sip_media_tunnel}. \CC{1}
+In SIP tunneling, the payload is embedded in SIP messages, and these
+messages are sent through the default bearer. Meanwhile, \CC{2} RTP tunneling
+carries the payload through the established dedicated bearer, as
+explained in~\autoref{sec:volte_network}.
+Strictly speaking, any protocol can be used for data delivery through the media
+session. However, we utilize RTP tunneling as all the operators we tested
+encapsulated voice data with RTP.
+Note that the voice data transmission using this channel is handled in the CP, and most of the details on its implementation
+remain proprietary.
+
+\PP{Direct communication} is another channel that directly sends one UE's
+data to another UE.~\autoref{fig:direct} illustrates the flow of direct
+communication: \CC{1} phone-to-Internet and \CC{2} phone-to-phone. Since the default
+bearer for VoLTE signaling messages is always established as long as the device
+is turned on, a UE can easily send data through this bearer to the Internet or another UE unless
+P-GW blocks it.
+
+\section{Exploitation}
+\label{sec:impl}
+
+
+We implemented our own sending and receiving modules to verify the hidden
+channels in operational networks.~\autoref{fig:module_image} illustrates the sending
+module (left) and receiving module (right), which are connected through the IMS
+network.
+
+\begin{figure*}[h]
+  \centering
+  \includegraphics[width=160mm]{images/module_image4}
+  \caption{Diagram of Sending and Receiving Module}
+  \label{fig:module_image}
+\end{figure*}
+
+
+
+As 3GPP specifications give some freedom to operators, and it is not
+clear if all operators follow 3GPP specifications~\cite{3gpp_ims,
+  gsma_volte} completely, our modules take this
+implementation-specific deviance into account. For example, for the
+operator using IPsec, we utilized the established IPsec tunnel to send
+our data instead of sending SIP messages directly.  In the case of direct
+communication, we do not require any additional implementation since we
+can open a socket at each side and transfer packets directly, if
+possible.
+
+\subsection{Sending Module}
+\label{sec:sending_module}
+
+First, our sending module should have more functionality than
+the native \vt calling application in a mobile phone; it should be
+able to vary its parameters such as the sender's phone number, IP address,
+and port number to create arbitrary media sessions. The sending module
+consists of SIP Parser, SIP Handler, SIP Tunneling Sender and RTP Tunneling Sender.
+
+\PP{\CC{1} SIP Parser} extracts common headers and carrier-specific headers in the
+packets obtained from native \vt apps.  For example,
+an {\tt INVITE} message contains the caller's phone number, IP address, and routing
+information such as IP addresses of SIP servers.  SIP Parser
+automatically parses this information and stores it in its database
+separated by each operator for later recreation of the SIP message in our
+sending module.
+
+\PP{\CC{2} SIP Handler} manages the exploitation. When we initiate our
+attack, it takes configuration values: operator's name, phone number,
+and phones' IP address and port number for tunneling.  By simply
+modifying these configuration values, the SIP Handler can generate SIP
+messages for each operator.  It also randomly generates
+parameters (e.g. branch, tag, and calling ID) that distinguish each call
+session to guarantee freshness.  SIP Handler triggers either
+SIP Tunneling Sender or RTP Tunneling Sender for each test.
+
+\PP{\CC{3} SIP Tunneling Sender} establishes a SIP tunnel when it
+receives a signal from SIP Handler. It first fragments a file to be
+transferred into several blocks.  Then it embeds the fragmented blocks
+inside the SIP messages.  Since there exists a maximum number that we
+can fragment (otherwise blocked by SIP servers in IMS) and the size of
+each block cannot exceed the MTU, the SIP Handler may need to fragment the
+file into multiple blocks.  For convenience, we place the data block
+at the end of the body in {\tt INVITE}.
+
+\PP{\CC{4} RTP Tunneling Sender} is more complicated than
+SIP tunneling.  In the case of RTP tunneling, fragmentation of a given file
+is the same as in SIP tunneling. However, we first must establish
+a media session to transfer data. Therefore, the RTP Tunneling Sender
+generates an {\tt INVITE} and follows the native call flow until it gets an
+{\tt OK (200)} message from the callee. It then extracts the IP
+address and the port number of the callee from the established media
+channel. It transfers the data blocks wrapped as an RTP packet to the
+extracted IP address and the port number. In native calling apps,
+voice is wrapped and sent from the CP. However, as described in~\autoref{sec:impl_anal}, 
+we discovered that audio
+packets from the AP to the receiver are routed correctly as well. To
+distinguish our packets from others, we add an identifier at the
+beginning of the payload. We also add the sequence number and
+timestamp after the identifier for our performance evaluation.
+
+
+
+\subsection{Receiving Module}
+\label{sec:receiving_module}
+
+
+The receiving module receives the data blocks in RTP packets sent from the
+sending module through the IMS network. Our receiving module consists
+of the SIP Tunneling Receiver, RTP Tunneling Receiver, Measuring Engine,
+and Data Storage.
+
+\PP{\CB{1} SIP Tunneling Receiver} parses SIP messages and extracts
+our data from received RTP packets.  Since SIP messages are processed
+in the AP, as described in~\autoref{sec:volte_network}, the SIP Tunneling
+Receiver can capture incoming packets and parse them in real time. As
+we placed the data blocks at the end of the body in the {\tt INVITE}, the
+receiver can easily extract the fragmented blocks and reassemble
+them. The receiving module opens a raw socket to capture packets
+because a SIP daemon is already running on the device.  For the
+operator using IPsec, we could easily extract SIP messages out of ESP
+packets since we changed the encryption algorithm to Null.
+
+
+\PP{\CB{2} DIAG} is QualComm's proprietary diagnostic protocol.
+It has a command that can be used to mirror every received packet to
+the RTP Tunneling Receiver via DIAG interface in the Android kernel
+as introduced by Delugre~\cite{delugre2011reverse}. To initiate
+mirroring from CP to the DIAG interface, the mobile device has to be
+connected to a laptop once. After this, the laptop can be
+disconnected.
+
+This step is necessary since the data we sent through the media
+channel are only processed in CP, but not forwarded to AP. Therefore,
+in order to receive and process packets directly, we need to utilize
+the DIAG command.
+
+In addition to the DIAG command, one may consider Android radio
+interface layer (RIL) to receive audio data. The problem with the RIL
+interface is that some mobile devices do not export incoming voice to
+ the AP. Instead, it transfers incoming voice directly to a speaker. Because
+of this limitation, we chose to use the DIAG command.
+
+\PP{\CB{3} RTP Tunneling Receiver} utilizes the DIAG interface.  After
+the mobile device receives the DIAG command, RTP Tunneling Receiver
+starts receiving all network packets through the DIAG interface in the
+Android kernel. If the received packet is not corrupted and contains
+the identifier we set in the sending module, it accepts the
+packet. Finally, it extracts and sends data blocks to Data Storage
+while a sequence number and timestamp are passed to the Measuring Engine.
+
+\PP{\CB{4} Measuring Engine} receives a sequence number, timestamp, and data size
+from the receivers to evaluate the network performance of our tunneling.
+Note that we did not measure the performance for the SIP tunneling
+since it might cause denial of service to the SIP servers in the IMS
+network (See~\autoref{sec:attack} for more details.)
+
+
+\subsection{Challenges and Limitations}
+During our implementation, we encountered some challenges. First,
+many operators do not follow the specifications~\cite{3gpp_ims,
+  gsma_volte} for either the flow or the structure of SIP messages. For
+example, some operators do not transfer {\tt RINGING} or {\tt SESSION
+  PROGRESS} during call setup. Some operators even simply modify or remove header fields for their own purposes.
+Consequently, much work had to be done to ensure our sending module adjusts operators' individual VoLTE features and obtain results thereupon.
+
+The second challenge is that at the receiver's side, the device automatically closes the calling session by
+sending a {\tt BYE} message when it
+does not receive RTP packets for a certain period (typically 10 seconds).
+Therefore, we had to wrap the data blocks into RTP packets to keep
+the session alive.
+
+Finally, the receiving module requires a mobile device to be connected with a
+laptop once to send the DIAG command. However, once logging setup is
+complete, the device does not need to be connected with the laptop
+until it is powered off. We discovered that the DIAG interface in the Android
+kernel does not accept DIAG commands.
+ We tried to send the DIAG command from the kernel to eliminate the one time connection to a
+laptop, but it was not successful.
+In contrast, from our laptop, we could send DIAG commands through the USB connection.
+There might be a protecting mechanisms in the CP that blocks DIAG commands from the
+mobile device since they are usually sent from control software in a laptop.
+
+
+\section{Evaluation}
+\label{sec:eval}
+
+
+\subsection{Media Channel Properties}
+\label{sec:chann_charac}
+We first measured the characteristics of the media channel during the call as in
+\autoref{table:media_channel_char}.  The experiment is conducted with
+OPTis-S\footnote{OPTis-S is a software that enables
+mobile device manufacturers to analyze control-plane messages.} software from
+Innowireless. These media channel characteristics represent bearer information
+set by operators as well as the QoS parameter for bandwidth designated in the
+body of an {\tt INVITE} message.
+
+\begin{table}[h]
+  \caption{Media channel characteristics}
+  \label{table:media_channel_char}
+  \renewcommand{\arraystretch}{1.4}
+  \renewcommand{\tabcolsep}{1.2mm}
+  \centering
+  \begin{tabular}{l| c c c c c c}
+    \hline
+    & \bf{US-1} & \bf{US-2} & \bf{KR-1} & \bf{KR-2} & \bf{KR-3} \\
+    \hline\hline
+    Qos Param. (Kbps) & 38 & 49 & 41 & 41 & 49 \\
+    Bandwidth (Kbps) & 38/49 & 49 & 65 & 65 & 65  \\
+    Latency (sec) & 0.1& 0.1 & 0.1& 0.1 & 0.1 \\
+    Loss rate (\%) & 1& 1& 1& 1 & 1  \\
+    \hline
+  \end{tabular}
+\end{table}
+
+When a mobile device establishes a media channel, the network sends a request for bearer creation with QoS information.
+We analyzed this request and extracted bandwidth, latency, and loss rate for the media channel. However, some operators do not specify this
+information in the message. In this case, we use the QoS class identifier (QCI) value in the message to identify the channel characteristics, as described in~\cite{3gpp_23203}.
+In most operators, as shown in~\autoref{table:media_channel_char}, the bandwidth specified in the bearer request is different from the {\tt INVITE} message.
+
+
+\subsection{Hidden Data Channel Measurements}
+We measured the network performance with the sending and receiving
+modules for the hidden data channel.  The experiment was conducted on
+the same five operators as in~\autoref{sec:anal}.  The feasibility of
+accounting bypass in each hidden data channel is shown in
+\autoref{table:free}. The table indicates that if we can send data
+through a certain channel, it is not charged. In the case of
+SIP tunneling and RTP tunneling, all operators are open to free data
+transfer.  However, the result of direct communication is different
+among operators.  In case of US-1, for example, phone-to-phone
+communication is available while phone-to-internet access is
+prohibited. The triangle mark in KR-3 means that a free data channel is
+available for IPv4, but not for IPv6. Since
+direct communication originates from implementation flaws or
+P-GW blocking policy, it can vary among operators. Through a feasibility analysis, we
+found that phone-to-phone direct communication is available
+for operators that do not have a media proxy.
+
+%% Feasibility of each accounting bypass attack
+\begin{table}[h]
+  \caption{Feasibility of our accounting bypass attacks in each operator}
+  \label{table:free}
+  \renewcommand{\arraystretch}{1.4}
+  \renewcommand{\tabcolsep}{1.2mm}
+  \centering
+  \small
+  \begin{tabular}{l | l | c c c c c c}
+    \hline
+    & \bf{Hidden Channel} & \bf{US-1} & \bf{US-2} & \bf{KR-1} & \bf{KR-2} & \bf{KR-3} \\
+    \hline\hline
+    VoLTE & SIP Tunneling   & \cc& \cc & \cc & \cc & \cc \\
+    \cline{2-8}
+    Call Service                & RTP Tunneling & \cc& \cc & \cc & \cc & \cc  \\
+    \hline
+    Direct & Phone to Phone    & \cc & \xx & \cc & \xx & \xx \\
+    \cline{2-8}
+    Communication                       & Phone to Internet & \xx & \cc & \cc & \xx & △ \\
+    \hline
+  \end{tabular}
+\end{table}
+
+
+
+We also measured the actual network performance for each operators,
+which includes throughput, latency, and loss rate, as shown in
+\autoref{table:media_tunneling}. While the information of network
+performance is included in the bearer creation request, we conducted this
+experiment to derive the actual performance. Since transferred data are
+wrapped with a RTP header upon UDP, we added an additional header
+containing an identifier, sequence number, and timestamp.  To measure
+throughput, we calculated received packet bytes per unit time.  For
+latency, the receiver computes the time difference and delay with the first
+two packets to sync its time with the sender.
+
+\begin{table}[h]
+  \caption{Measurement results of RTP tunneling in each target operator.}
+  \label{table:media_tunneling}
+  \renewcommand{\arraystretch}{1.4}
+  \renewcommand{\tabcolsep}{1.2mm}
+  \centering
+  \begin{tabular}{l| c c c c c}
+    \hline
+    & \bf{US-1} & \bf{US-2} & \bf{KR-1} & \bf{KR-2} & \bf{KR-3} \\
+    \hline\hline
+    Throughput (Kbps) & 37.90& 36.93& 45.76& 39 & 50.48\\
+    Latency (sec) & 0.52& 0.02 & 0.10& 0.32 & 0.30\\
+    Loss rate (\%) & 1.44& 1.74& 0.77& 0.65 & 0.73 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+
+
+Note that in our hidden data channel, we can send data as fast as
+possible. However, since the bandwidth is limited, more packets will
+be dropped when we increase the throughput. Therefore, by fitting the
+loss rate to 1\% (i.e. using the same loss rate as in
+\autoref{table:media_channel_char}) by delaying or varying the payload size, we
+can obtain the actual throughput.
+
+For the experiment, we sent 200,000 packets and averaged the results.
+Since multiple SIP messages can damage SIP servers in the IMS network,
+we did not measure the performance for SIP tunneling.  As can be seen
+in~\autoref{table:media_tunneling}, the results are different from the media channel
+characteristics in~\autoref{sec:chann_charac}. The discrepancy may originate from several factors: number of users, cellular network
+status, or signal strength to the cell tower.
+
+
+We also measured the performance of direct communication: phone-to-phone and
+phone-to-internet. The best result of phone-to-phone communication was 16.84 Mbps
+in one of the Korean operators. In the case of phone-to-internet, the best result was 21.55 Mbps for the
+same operator. This high throughput comes from the bandwidth of
+the default bearer for VoLTE signaling being configured in the same manner as the default
+bearer for the data service.
+However, as described in~\autoref{sec:volte_network}, data transmission through
+the default bearer for VoLTE signaling has the highest priority. Therefore, if
+a malicious user utilizes the VoLTE default bearer for data transmission, she
+will be guaranteed higher performance than normal users.
+
+
+

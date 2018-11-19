@@ -5,15 +5,61 @@
 \section{LTE Network Infrastructure}
 \label{sec:cellular}
 
-A cellular network comprises two architectural components: an access
+A cellular network comprises of two architectural components: an access
 network that the UE connects to, and a core network that supports its
 cellular infrastructure.
+%
+\autoref{fig:cell_arch} illustrates the two-folded architecture of 3G
+and LTE networks. The access network (left side) is a radio connection
+where the UE accesses a base station (e.g., NodeB in 3G and evolved
+NodeB, \mbox{eNodeB} in LTE in short).
+%
+On the other hand, the core network (gray region) handles
+service-level connections such as voice calls and the Internet (e.g.,
+PSTN in 3G and IMS~\cite{3gpp_ims} in LTE).
+%
+IP Multimedia Subsystem (IMS) offers IP-based voice calls and multimedia
+services by using the SIP (bottom), and Public Switched Telephone
+Network (PSTN) provides a typical public telephone network (top).
+%
+4G GWs in the core network consist of Serving Gateway (S-GW) and P-GW.  S-GW is
+a mobility anchor for inter eNodeB handover and relays the traffic between 2G/3G
+systems and P-GW. Meanwhile, the P-GW manages the PDN connection between a UE
+and a service.  It is also responsible for packet filtering and charging, which
+are crucial functions for preventing accounting bypass and service abuse
+attacks.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=130mm]{images/Cellular_architecture5}
+  \caption{Two-folded architecture of 3G and LTE networks. Mobility
+    Management Entity (MME) in LTE stands for user mobility.
+  }
+
+  \label{fig:cell_arch}
+\end{figure}
  
+The major difference between 3G (top) and LTE (bottom) networks is in the
+way they deliver data in the core network. The 3G network separates 
+network domains into packet-switching for the Internet connection and
+circuit-switching for phone calls.
+%
+The mobile switching center (MSC) in the circuit-switching domain transfers voice calls,
+and the 3G gateways enable data communication in the packet-switching domain.
+%
+In contrast, the LTE network only operates through the packet-switching
+domain; as it does not have a circuit-switching domain, its voice calls either fall
+back into the 3G network (also known as Circuit Switched Fallback, or CSFB
+in short) or
+%
+the LTE provides a \vt solution to transfer both voice calls and data
+to the packet-switching domain, which does not require any fallback to the 3G circuit-switching
+network.
 
 \section{VoLTE Service}
 \label{sec:volte_network}
 
-\vt service is introduced to deliver voice calls
+The \vt service is introduced to deliver voice calls
 over the packet-switching based LTE network.
 The service utilizes an IMS network based on SIP,
 similar to VoIP service over the LTE network.
@@ -28,19 +74,148 @@ follows standard procedures as depicted in~\autoref{fig:volte_procedure}.
   \label{fig:volte_procedure}
 \end{figure}
 
+To connect to the LTE network, \CC{1} a UE first contacts the eNodeB,
+and then \CC{2} the UE registers itself to the Evolved Packet System (EPS),
+establishing an Internet Protocol (IP) connection, which is
+identified by a \emph{default bearer}. Note that this IP address is
+different from the one used for data connection. In other words, every
+phone supporting \vt is assigned two IP addresses: one for
+voice and the other for data~\cite{3gpp_ip}. 
+%
+Once the
+UE has an IP connection to \vt, \CC{3} the UE connects
+to the IMS network and the IMS server authenticates whether the device
+is allowed for the \vt service.
+
+If authenticated, \CC{4} the UE can make a voice call through
+the SIP signaling service,
+provided by Call Session Control Function (CSCF) servers.
+%
+When a call session is established,
+\CC{5} a \emph{dedicated bearer}
+is created to identify voice-related traffics
+and \CC{6} all voice packets are transferred
+through this dedicated bearer.
+%
+\CC{7} Upon call termination, the bearer used for the
+voice session is released.
+
+Note that two bearers are used to enable a connection in the \vt service.
+%
+The default bearer
+established during the EPS registration is for call signaling.
+Once the default bearer has been established,
+all the incoming and outgoing SIP packets are bound to
+this bearer.
+%
+%However, this default bearer has lower priority than the bearer
+%for traditional cellular services like voice call.
+%
+According to the 3GPP specification~\cite{3gpp_23203}, this default bearer
+ has the highest priority among all possible bearers for voice or data services.
+%
+The main reason for this different prioritization is to support the
+QoS of a phone call, similar to circuit-switching based routing.
+%
+When a phone call is made,
+the IMS Packet Data Network (PDN) temporarily creates a dedicated bearer
+that has a lower priority than the default one.
+This dedicated bearer, however, has a higher priority than the bearers for data services.
+%to transmit voice data. (But, it is still higher than the bearers for normal data services.)
+%
+Although the dedicated bearer has the same IMS PDN address as the default
+bearer, it operates by different rules that allow voice packets with the
+negotiated media port to pass through the dedicated bearer.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=100mm]{images/invite3}
+  \caption{
+    VoLTE signaling (SIP) flow of Call setup and tear down
+  }
+  \label{fig:inv}
+\end{figure}
+
 
 \section{VoLTE Signaling Protocol}
 \label{sec:signal_protocol}
 
 
 \PP{Call Signaling.}
+%Once the IMS registration is completed, the UE is ready for processing incoming/outgoing VoLTE calls.
+\autoref{fig:inv} illustrates the call setup procedure between two
+UEs, UE-A and UE-B. This can be considered as a more detailed version
+of \autoref{fig:volte_procedure} from \CC{4} to \CC{7}, corresponding to the 
+VoIP protocol. To initiate a VoLTE call to UE-B,
+UE-A first generates an {\tt INVITE} message and sends it to a SIP
+server~\footnote{In this paper, for simplicity, we use the SIP server to represent all
+  Call Session Control Function (CSCF) servers in the IMS network.}. The {\tt INVITE} message contains a description of
+the caller's phone number, IP address, and media characteristics: a
+port number, encoding scheme, and QoS parameters for media
+communication. Upon receiving the {\tt INVITE} message, the SIP server responds to
+UE-A with a {\tt TRYING (100)} message, and then it relays {\tt INVITE} to
+UE-B after checking if the message is valid. Upon receiving the
+{\tt INVITE} message, UE-B responds with {\tt RINGING (180)} and {\tt
+  SESSION PROGRESS (183)} to indicate its call session is being
+processed. In response to the {\tt SESSION PROGRESS} message, UE-A
+sends a progress ack ({\tt PRACK}) message.
+
 If the user accepts the call at UE-B, it sends an {\tt OK (200)}
+message containing information similar to the {\tt INVITE}
+message. When the SIP server receives the {\tt OK (200)}, it routes this message to UE-A
+and starts charging the calling session. As soon as UE-A receives the {\tt OK (200)},
+an end-to-end media session for voice data is established between UE-A
+and UE-B. This media session contains a dedicated bearer for both UE-A
+and UE-B, and a media proxy in the IMS network. Typically, this media
+session is implemented using RTP (Real Time Protocol) on top of
+UDP. When either of the UEs wants to terminate the call, it sends a {\tt BYE}
+message to the SIP server. Upon receiving such a message, the SIP server stops charging the
+call session and routes the {\tt BYE} message to the other UE, and terminates the
+media proxy.
 
 
-\PP{Call Management in the UE.}
+\PP{Call Management in the UE.}  After a call session is
+established, UEs transfer voice data to each other through the
+established media channel. The smartphones used for our experiment have
+two processors: an application processor (AP) for running the smartphone
+operating system (e.g., Android) and user applications; and a
+communication processor (CP) for handling radio access and
+radio-related signaling.
+
+Call signaling is handled by a SIP client running in the AP. This SIP client
+binds its socket on a specific port (default: 5060) to communicate with SIP
+servers. Meanwhile, the CP has a digital signal processing (DSP) module that
+handles radio communication with base stations as well as audio data from a
 speaker and a microphone. Upon receiving voice traffic from a radio
 channel, the CP processes the voice packets and forwards only audio data to
 the AP, which lessens the computational burden of the AP. 
+
+\section{Mysteries of VoLTE}
+\PP{Accounting of VoLTE calls.}
+While \vt is implemented on the packet-switching network (i.e. it runs on IP), it
+applies a legacy time-based charging policy as in 3G networks.
+Traditionally, a voice call delivered through the circuit-switching network is charged according to
+the duration of time it occupies the channel (e.g., \$15 for 225
+minutes).  In contrast, data connection through a packet-switching network is
+charged based on byte-usage (e.g., \$15 for 1GB). As \vt utilizes
+only a packet-switching network, it consumes the same byte-usage as for the data
+connection. Despite this, it is quite odd that the majority of
+carriers still charge the voice service by time duration. This {\it
+  discrepancy} could complicate accounting procedures, since different
+IP addresses are used for both data and voice, and their accounting
+units are different. Furthermore, many operators recently provide
+unlimited calls among \vt users as a default pricing plan, which could
+be used as a free data channel, if exploited.
+
+\PP{VoLTE solution in device.}
+As described in~\autoref{sec:signal_protocol}, the call signaling procedure
+in 3G is handled in CP. Because the details of CP is not disclosed to the
+public, a malicious application installed on a mobile device cannot easily
+manipulate the call signaling. However, in \vt, as the call signaling is handled
+in AP, it could open a new attack surface to an adversary that she can directly
+manipulate the call signaling and perform malicious behaviors. Therefore, to
+diagnose the potential vulnerabilities of newly adopted \vt, we performed
+an empirical analysis of \vt services.
 
 
 

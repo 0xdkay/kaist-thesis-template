@@ -1,8 +1,119 @@
 % 6 Countermeasure
 \chapter{Countermeasures}
 \label{sec:cm}
-In this section, we discuss solutions for both free hidden channels and VoLTE
+In this section, we discuss solutions for both free data channels and VoLTE
 service abuse attacks. Since these solutions are quite intuitive, they can be
 easily applied to the commercial cellular networks.
+Some attack vectors originate from mis-implementation of operators,
+while others are derived from fundamental problems of the \vt system.
+These fundamental problems are more difficult to obviate than the other attacks.
+To prevent these attacks, we suggest more difficult yet comprehensive solutions for securing
+the overall \vt service.
 
+
+\section{Immediate Solution}
+\PP{Filtering.}
+The main cause of direct communication is inappropriate access control of
+user-initiated requests at the gateways in cellular networks. The purpose of the
+\vt default bearer is call signaling; therefore, the gateways should filter out
+all other packets except SIP messages.  In our analysis, however, some operators
+do not follow the standard for call related services.  For example, one operator
+in Korea provides conference calls using their proprietary protocols on top of
+HTTP although an IETF standard~\cite{johnston2006session} provides a conference
+call solution using the SIP protocol.  This inconsistency of service
+implementation can create difficulties in correctly managing the access control
+at the gateways.
+
+In addition, operators should block all packets travelling directly between UEs,
+and only allow packets from UEs to the SIP server/media proxies, and vice versa.
+As a result, free data channels as well as free video calls and caller spoofing
+could be blocked.
+
+\PP{Strict Session Management.}
+Proper session management is a basic requirement for the security of any server.
+SIP tunneling, denial of service, and cellular p2p are all possible attacks
+resulting from the absence of session management at the SIP servers.
+If a SIP server carefully inspects SIP messages originating from UEs, it can
+block SIP tunneling.  For example, it can check whether an invalid field or
+content exist in the header and the payload. If the result of the check is
+unsatisfactory, it should reject the requests and respond to UEs with an error
+message.
+
+Further, to protect against SIP tunneling and denial of service attacks,
+operators should limit the number of SIP messages from a UE within a certain
+period. If an adversary exceeds a certain threshold, operators should block the
+adversary and inspect her activities.  Furthermore, the SIP server should check
+if a UE is already calling another UE. If so, it should block other call
+originating messages (i.e. {\tt INVITE} messages). This policy can detect and
+prevent other attacks such as cellular p2p definitely, and intuitively because a
+prerequisite of these attacks is that an adversary should be able to send
+multiple {\tt INVITE} messages.
+
+\PP{UE Verification.}
+To prevent call spoofing, SIP servers should verify the source of SIP messages.
+This can be achieved by adding a UE's unique identity (e.g., IMEI) to the header
+of SIP messages, so that SIP servers can cross-check the phone number with the
+unique identity.
+Unless a unique identity is stored securely in the mobile device, an adversary can
+easily intercept this information by remotely installing a malicious
+application.
+
+Another solution is to bind the phone number with the allocated IP address of a UE. The
+operators can validate the user-initiated SIP messages by checking UE's IP
+header with the parameters (such as IP address, phone number, and device unique
+identity) in SIP messages because this information is already stored in the
+operators\rq{} server.  IP spoofing is also possible, but we found that all the
+operators we experimented with have an IP spoofing prevention mechanism for the
+data interface. Even though we have not tested IP spoofing for the \vt
+interface, the operators might have already installed a similar mechanism in
+\vt. Therefore, cross-checking is a strong yet easy to implement solution.
+
+However, it cannot prevent caller spoofing in cases where an adversary spoofs 
+the victim's IMS registration procedure, such that the SIP server stores spoofed
+parameters. A UE registers itself to a SIP server by exchanging REGISTER messages,
+and the SIP server stores several parameters that can identify the UE. Thus, if
+an adversary can spoof the registration, she can obtain the full
+permission of the victim's phone address.  
+
+\PP{Deep Packet Inspection (DPI).}
+Since the RTP tunneling exploits the media dedicated bearer during a \vt call,
+operators can recognize if a user is utilizing the media channel through traffic
+monitoring. This monitoring job can be done by applying a deep packet inspection
+(DPI) solution in P-GWs or media proxies. However, if an adversary disguises
+the data into voice-like traffic, then the DPI solution will not be sufficient to prevent it.
+
+\PP{Accounting Policy.}
+All the free channels we exploited in this paper resulted from
+time-based accounting. This problem can be resolved by changing the
+accounting policy of \vt service to a byte usage-based scheme. Of
+course, even in this case, an adversary can still exploit a voice
+channel. However, she cannot bypass the accounting. This seems quite
+natural, but it would be difficult for the operators to change the
+current time-based policy since it is deeply related to the
+revenue. 70\% of total revenue in the operators is still from 
+voice and SMS~\cite{Ericsson_press}.
+
+
+\section{A Long-term and Comprehensive Solution}
+Permission model mismatch is a severe problem that is prevalent in current
+\vt-compatible mobile devices. Unlike the previous call mechanism, as \vt is
+IP-based, the current permission model of mobile devices cannot handle it. One
+possible solution is force the sockets from applications to use the data
+interface.  In this way, SIP packets from an application cannot reach the SIP
+server. The operators, in the same manner, should block packets from the data
+interface. One limitation of this solution is that deploying the solution would
+not be easy since all the firmware of mobile devices should be updated.
+Furthermore, data encryption (e.g. IPsec or TLS for signaling, and sRTP for
+media data) should be deployed as specified in the 3GPP
+specifications~\cite{3gpp_net_sec, 3gpp_access_sec}.
+
+However, even with strict binding and encryption, an adversary can still utilize
+tunneling since she has all permission for her phone.  Another way to resolve
+the problem is to process both call signaling and voice data transmission in the
+CP as a traditional circuit-switching call does.  The CP only allows legitimate
+call related requests and blocks all other packets utilizing the \vt interface
+from the AP. Thus, an adversary cannot send manipulated packets through the \vt
+interface. Furthermore, protecting the CP with hardware security modules such as
+TrustZone or secure storage~\cite{alves2004trustzone} may also be required to
+prevent the adversary from intercepting SIP messages in the CP.
 

@@ -7,6 +7,7 @@
 \usepackage{xspace}
 \usepackage{mdframed}
 \usepackage{float}
+\usepackage{amsmath}
 \usepackage{makecell}
 \usepackage{fancybox}
 
@@ -20,13 +21,17 @@
   urlcolor={blue!50!black}
 }
 \hypersetup{citecolor=blue,linkcolor=blue}
+%\usepackage{array,underscore,relsize}
 \usepackage{fancyhdr,lastpage}
 \usepackage{enumitem}
+%\usepackage[labelfont=bf,font=small,skip=5pt]{caption}
 \usepackage[labelfont=bf]{caption}
 \usepackage{amsmath,amsfonts}
 
 
+%\usepackage[labelformat=simple]{subfig}
 \usepackage{subfigure}
+%\renewcommand{\thesubfigure}{\relax}  % Do nothing for the counter »subfigure«
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{tabularx}
@@ -39,6 +44,8 @@
 \usepackage[htt]{hyphenat}
 \usepackage{tikz}
 \usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{booktabs}  % for toprule, bottomrule in tables
 \usepackage[sort,space]{cite}
 
 \usepackage{ifthen}
@@ -48,6 +55,8 @@
     \ifthenelse{\equal{\showComments}{yes}}{\textcolor{#1}{#2}}{}%
 }
 
+\newcommand{\sys}{{Extractocol}\xspace}
+\newcommand{\vt}{VoLTE\xspace}
 
 
 \usepackage[compact]{titlesec}
@@ -78,18 +87,21 @@
 
 \usepackage{amssymb}% http://ctan.org/pkg/amssymb
 \usepackage{pifont}% http://ctan.org/pkg/pifont
-
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
 
 \lstset{basicstyle=\ttfamily,commentstyle=\itshape,language=Java}
 \lstdefinestyle{Java}{
     language={Java},basicstyle=\ttfamily,
     %% moredelim=**[is][\btHL]{`}{`},
     moredelim=**[is][{\btHL[fill=gray!30]$\rightarrow$}]{@}{@},
-    moredelim=**[is][{\btHL[fill=blue!30]$\bigtriangleup$}]{^}{^}, moredelim=**[is][{\btHL[fill=red!30]$\bigtriangledown$}]{*}{*},
+    moredelim=**[is][{\btHL[fill=blue!30]$\bigtriangleup$}]{^}{^},
+    moredelim=**[is][{\btHL[fill=red!30]$\bigtriangledown$}]{*}{*},
     moredelim=**[is][{\btHL[fill=orange!30]\hspace{-1em}\textbf{${}^U$}}]{`}{`},
     moredelim=**[is][{\btHL[fill=cyan!30]\hspace{-1em}\textbf{${}^B$}}]{\\}{\\},
 }
 
+%% for author affiliation
 \input{macro}
 
 
@@ -136,9 +148,12 @@
 \input{back}
 \input{anal}
 \input{accounting}
+%\input{impl}
+%\input{eval}
 \input{attack}
 \input{cm}
 \input{related}
+
 \input{concl}
 
 
