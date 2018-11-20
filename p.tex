@@ -1,109 +1,9 @@
 %\documentclass[letterpaper]{acm_proc_article-sp}
 %\documentclass[letterpapar]{sig-alternate-2013}
-\documentclass[master,english,final,pdfdoc]{kaist-ucs}
-\usepackage{epsfig,endnotes}
-\usepackage{color}
-\usepackage{verbatim}
-\usepackage{xspace}
-\usepackage{mdframed}
-\usepackage{float}
-\usepackage{amsmath}
-\usepackage{makecell}
-\usepackage{fancybox}
-
-\usepackage{times}
-\usepackage{flushend}
-\usepackage{datetime}
-\hypersetup{
-  colorlinks,
-  linkcolor={red!50!black},
-  citecolor={blue!50!black},
-  urlcolor={blue!50!black}
-}
-\hypersetup{citecolor=blue,linkcolor=blue}
-%\usepackage{array,underscore,relsize}
-\usepackage{fancyhdr,lastpage}
-\usepackage{enumitem}
-%\usepackage[labelfont=bf,font=small,skip=5pt]{caption}
-\usepackage[labelfont=bf]{caption}
-\usepackage{amsmath,amsfonts}
-
-
-%\usepackage[labelformat=simple]{subfig}
-\usepackage{subfigure}
-%\renewcommand{\thesubfigure}{\relax}  % Do nothing for the counter »subfigure«
-\usepackage{booktabs}
-\usepackage{multirow}
-\usepackage{tabularx}
-\usepackage{arydshln}
-\usepackage{tabu}
-
-\newcommand{\dashrule}[1][black]{%
-  \color{#1}\rule[\dimexpr.5ex-.2pt]{4pt}{.4pt}\xleaders\hbox{\rule{4pt}{0pt}\rule[\dimexpr.5ex-.2pt]{4pt}{.4pt}}\hfill\kern0pt%
-  }
-\usepackage[htt]{hyphenat}
-\usepackage{tikz}
-\usepackage{microtype}
-\usepackage{enumitem}
-\usepackage{booktabs}  % for toprule, bottomrule in tables
-\usepackage[sort,space]{cite}
-
-\usepackage{ifthen}
-
-\newcommand{\showComments}{yes}
-\newcommand{\note}[2]{%
-    \ifthenelse{\equal{\showComments}{yes}}{\textcolor{#1}{#2}}{}%
-}
-
-\newcommand{\sys}{{Extractocol}\xspace}
-\newcommand{\vt}{VoLTE\xspace}
-
-
-\usepackage[compact]{titlesec}
-\usepackage{listings}
-\usepackage{kotex}
-\makeatletter
-\newenvironment{btHighlight}[1][]
-{\begingroup\tikzset{bt@Highlight@par/.style={#1}}\begin{lrbox}{\@tempboxa}}
-{\end{lrbox}\bt@HL@box[bt@Highlight@par]{\@tempboxa}\endgroup}
-\newcommand\btHL[1][]{%
-  \begin{btHighlight}[#1]\bgroup\aftergroup\bt@HL@endenv%
-}
-\def\bt@HL@endenv{%
-  \end{btHighlight}%
-  \egroup
-}
-\newcommand{\bt@HL@box}[2][]{%
-  \tikz[#1]{%
-    \pgfpathrectangle{\pgfpoint{1pt}{0pt}}{\pgfpoint{\wd #2}{\ht #2}}%
-    \pgfusepath{use as bounding box}%
-    \node[anchor=base west, fill=orange!30,
-          outer sep=0pt, inner xsep=1pt, inner ysep=0pt,
-          rounded corners=3pt, minimum height=\ht\strutbox+1pt,#1]{%
-            \raisebox{1pt}{\strut}\strut\usebox{#2}};
-  }%
-}
-\makeatother
-
-\usepackage{amssymb}% http://ctan.org/pkg/amssymb
-\usepackage{pifont}% http://ctan.org/pkg/pifont
-\newcommand{\cmark}{\ding{51}}%
-\newcommand{\xmark}{\ding{55}}%
-
-\lstset{basicstyle=\ttfamily,commentstyle=\itshape,language=Java}
-\lstdefinestyle{Java}{
-    language={Java},basicstyle=\ttfamily,
-    %% moredelim=**[is][\btHL]{`}{`},
-    moredelim=**[is][{\btHL[fill=gray!30]$\rightarrow$}]{@}{@},
-    moredelim=**[is][{\btHL[fill=blue!30]$\bigtriangleup$}]{^}{^},
-    moredelim=**[is][{\btHL[fill=red!30]$\bigtriangledown$}]{*}{*},
-    moredelim=**[is][{\btHL[fill=orange!30]\hspace{-1em}\textbf{${}^U$}}]{`}{`},
-    moredelim=**[is][{\btHL[fill=cyan!30]\hspace{-1em}\textbf{${}^B$}}]{\\}{\\},
-}
-
+\documentclass[master,english,final]{kaist-ucs}
 %% for author affiliation
+\input{pkgs}
 \input{macro}
-
 
 \title[korean] {VoLTE 보안 취약점에 관한 연구}
 \title[english]{Dissecting VoLTE: Exploiting Free Data Channels and Security Problems}
@@ -115,7 +15,6 @@
 \advisor[major]{김 용 대}{Kim, Yongdae}{signed}
 \department{EE}{engineering}
 \studentid{20143084}
-
 
 \referee[1]{김 용 대}
 \referee[2]{박 경 수}
