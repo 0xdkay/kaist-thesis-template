@@ -1,67 +1,30 @@
-%\documentclass[letterpaper]{acm_proc_article-sp}
-%\documentclass[letterpapar]{sig-alternate-2013}
-\documentclass[master,english,final]{kaist-ucs}
-%% for author affiliation
+%\documentclass[master,english,final,pdfdoc]{kaist-ucs}
+\documentclass[doctor,english,final,pdfdoc]{kaist-ucs}
 \input{pkgs}
-\input{macro}
+\input{cmds}
 
-\title[korean] {VoLTE 보안 취약점에 관한 연구}
-\title[english]{Dissecting VoLTE: Exploiting Free Data Channels and Security Problems}
-
-\author[korean] {김}{동관}
-\author[chinese]{金}{東 寬}
-\author[english]{Kim}{Dongkwan}
-
-\advisor[major]{김 용 대}{Kim, Yongdae}{signed}
-\department{EE}{engineering}
-\studentid{20143084}
-
-\referee[1]{김 용 대}
-\referee[2]{박 경 수}
-\referee[3]{한 동 수}
-\referee[4]{신 승 원}
-
-% @command approvaldate 지도교수논문승인일
-% @param   year,month,day 연,월,일 순으로 입력
-\approvaldate{2015}{12}{15}
-
-% @command refereedate 심사위원논문심사일
-% @param   year,month,day 연,월,일 순으로 입력
-\refereedate{2015}{12}{15}
-
-% @command gradyear 졸업년도
-\gradyear{2015}
+%% For author, advisor, and referees
+\input{hdr}
 
 \begin{document}
 
-\input{abstract}
+\thesisinfo
+\input{sections/summary}
+\input{sections/abstract}
 
+% Create all three indices: Table of Contents, List of Tables, List of Figures
 \makecontents
-%% 목차 (Table of Contents) 생성
-%\tableofcontents
-%% 표목차 (List of Tables) 생성
-%\listoftables
-%% 그림목차 (List of Figures) 생성
-%\listoffigures
 
-\input{intro}
-\input{back}
-\input{anal}
-\input{accounting}
-%\input{impl}
-%\input{eval}
-\input{attack}
-\input{cm}
-\input{related}
+\input{sections/intro}
+\input{sections/concl}
 
-\input{concl}
+% Uncomment below after adding citation.
+%\bibliographystyle{abbrv}
+%\bibliography{refs/p}
 
+\input{sections/ack}
+\input{sections/cv}
 
-\bibliographystyle{abbrv}
-\bibliography{references}
-
-\input{summary}
-\input{ack}
-\input{cv}
+\label{paperlastpagelabel}
 
 \end{document}
